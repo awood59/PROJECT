@@ -9,12 +9,20 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+<<<<<<< HEAD
 ## Governance Analytics Final Project - Alex Woodward
 
 ## **Executive Summary:**
 Here I will add a description for the executive summary. xx
 
 ## **Getting the Data**
+=======
+## R Markdown
+
+Add Executive Summary Here:
+
+## Getting the Data
+>>>>>>> d3cdf67e6196cec3fa3f073e7587c8603104f260
 Explain the data and where it came from.
 
 ```{r cars}
