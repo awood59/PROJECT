@@ -1,0 +1,7 @@
+"0","(lastBad=names(table(unlist(lapply(WAData$NAMEOK,word,-1))))[-c(4,5)])"
+"1","[1]"
+"1"," ""147"""
+"1"," ""167"""
+"1"," ""402"""
+"1","
+"

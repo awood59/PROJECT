@@ -1,0 +1,1 @@
+"0","WAData$NAMEbad=unlist(lapply(WAData$NAMEOK,word,-1))"

@@ -1,0 +1,24 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1517895351964.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2184320717",
+    "id" : "F68AA41F",
+    "lastKnownWriteTime" : 1520022596,
+    "last_content_update" : 1520022606646,
+    "path" : "~/Desktop/Texts/GitHub/PROJECT/Map.Rmd",
+    "project_path" : "Map.Rmd",
+    "properties" : {
+        "chunk_output_type" : "inline",
+        "cursorPosition" : "30,24",
+        "scrollLine" : "0",
+        "tempName" : "Untitled6"
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

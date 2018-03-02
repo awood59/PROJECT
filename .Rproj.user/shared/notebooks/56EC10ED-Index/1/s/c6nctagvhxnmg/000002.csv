@@ -1,0 +1,5 @@
+"0","# with 5"
+"0","dfsil5=silhouette(cutree(dfClus, k = 4), dfSimi)"
+"0","clust5solution=data.frame(matrix(dfsil5,ncol = 3,dimnames =dimnames(dfsil5)))"
+"0","row.names(clust5solution)=df$Country"
+"0","(bad5=clust5solution[clust5solution$sil_width<0,])"

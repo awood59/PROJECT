@@ -1,0 +1,155 @@
+---
+title: "Assignment2"
+author: "Alex Woodward"
+date: "1/27/2018"
+output: html_document
+---
+```{r}
+library(readxl)
+
+temp = tempfile(fileext = ".xlsx") # use always with Excel
+dataURL <- "https://github.com/awood59/data/blob/gh-pages/2017WorldHappiness.xlsx" # link to data
+download.file(dataURL, destfile=temp, mode='wb')  # file will be downloaded temporarily
+```
+```{r}
+library(car)
+scatterplotMatrix(FullData[,c(3:6)], diagonal='histogram',reg.line=NULL , smoother=NULL,legend.plot=F)
+```
+
+```{r}
+summary(FullData)
+```
+```{r}
+df=FullData
+```
+```{r}
+length(df$)==length(unique(df$Country))
+```
+
+```{r}
+row.names(df)=df$Country
+```
+```{r}
+str(df[,c(1:6)])
+```
+```{r}
+library(cluster)
+dfSimi=daisy(df[,c(2:6)],metric = "euclidean",
+               stand=TRUE) # standardizing
+```
+```{r}
+# input is: similary matrix 
+dfClus=hclust(dfSimi,method = 'average') # linkage is 'average'
+```
+```{r}
+# General plot
+plot(dfClus,cex=0.5)
+```
+```{r}
+plot(dfClus,cex=0.3)
+rect.hclust(dfClus, k = 4,border = c('orange','blue','red','green'))
+```
+```{r}
+# with 4
+dfsil4=silhouette(cutree(dfClus, k = 3), dfSimi)
+clust4solution=data.frame(matrix(dfsil4,ncol = 3,dimnames =dimnames(dfsil4)))
+row.names(clust4solution)=df$Country
+(bad4=clust4solution[clust4solution$sil_width<0,])
+```
+```{r}
+# with 5
+dfsil5=silhouette(cutree(dfClus, k = 4), dfSimi)
+clust5solution=data.frame(matrix(dfsil5,ncol = 3,dimnames =dimnames(dfsil5)))
+row.names(clust5solution)=df$Country
+(bad5=clust5solution[clust5solution$sil_width<0,])
+```
+```{r}
+intersect(row.names(bad4),row.names(bad5))
+```
+```{r}
+# saving solution chosen
+solution=clust4solution
+
+# creating country column
+solution$Country=row.names(clust4solution)
+row.names(solution)=NULL # resetting rownames
+
+# merging
+dfUpdated=merge(df,solution)
+```
+```{r}
+palette=c('blue','orange','red','black')
+scatterplotMatrix(dfUpdated[,c(3:6)], diagonal='histogram',reg.line=NULL , smoother=NULL,groups = dfUpdated$cluster,col = palette,legend.plot=F)
+```
+```{r}
+hist(log(df[,7]))
+```
+```{r}
+# Produce a similarity matrix:
+
+library(cluster)
+dfSimi=daisy(df[,c(3:6)],metric = "euclidean",
+               stand=TRUE) # standardizing
+
+# Apply the clustering technique:
+
+dfClus=hclust(dfSimi,method = 'complete') # different linkage
+
+# Determine the adequate amount of clusters:
+
+# General plot
+plot(dfClus,cex=0.5)
+```
+```{r}
+plot(dfClus,cex=0.3)
+rect.hclust(dfClus, k = 4,border = c('orange','blue','red','green'))
+```
+```{r}
+# See numerically with 4
+dfsil4=silhouette(cutree(dfClus, k = 4), dfSimi)
+clust4solution=data.frame(matrix(dfsil4,ncol = 3,dimnames =dimnames(dfsil4)))
+row.names(clust4solution)=df$Country
+(bad4=clust4solution[clust4solution$sil_width<0,])
+```
+```{r}
+#Include the cluster information into your original data. 
+# saving solution chosen
+solution=clust4solution
+
+# creating country column
+solution$Country=row.names(clust4solution)
+row.names(solution)=NULL # resetting rownames
+
+# merging
+dfUpdated=merge(df,solution)
+
+# You can see a different matrix plot:
+
+palette=c('blue','orange','red','black')
+
+scatterplotMatrix(dfUpdated[,c(3:6)], diagonal='histogram',reg.line=NULL , smoother=NULL,groups = dfUpdated$cluster,col = palette,legend.plot=F)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

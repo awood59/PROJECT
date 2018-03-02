@@ -1,0 +1,1 @@
+"0","FullData <- merge(WAFinance1, DropOutData, by=""District Name"")"

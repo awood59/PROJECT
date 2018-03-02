@@ -1,0 +1,2 @@
+"0","palette=c('blue','orange','red','black')"
+"0","scatterplotMatrix(dfUpdated[,c(3:6)], diagonal='histogram',reg.line=NULL , smoother=NULL,groups = dfUpdated$cluster,col = palette,legend.plot=F)"

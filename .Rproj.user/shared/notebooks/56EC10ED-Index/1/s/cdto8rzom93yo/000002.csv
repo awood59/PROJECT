@@ -1,0 +1,3 @@
+"0","library(cluster)"
+"0","dfSimi=daisy(df[,c(2:6)],metric = ""euclidean"","
+"0","               stand=TRUE) # standardizing"

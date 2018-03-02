@@ -1,0 +1,13 @@
+"0","library(readxl)"
+"2","Warning message:
+"
+"2","package ‘sp’ was built under R version 3.4.3 
+"
+"0","temp = tempfile(fileext = "".xlsx"") # use always with Excel"
+"0","dataURL <- ""https://github.com/awood59/data/blob/gh-pages/2017WorldHappiness.xlsx"" # link to data"
+"0","download.file(dataURL, destfile=temp, mode='wb')  # file will be downloaded temporarily"
+"2","trying URL 'https://github.com/awood59/data/blob/gh-pages/2017WorldHappiness.xlsx'
+"
+"2","downloaded 30 KB
+
+"

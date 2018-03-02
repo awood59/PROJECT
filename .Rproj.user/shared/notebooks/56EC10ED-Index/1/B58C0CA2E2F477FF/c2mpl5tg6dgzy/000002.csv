@@ -1,0 +1,3 @@
+"0","library(car)"
+"2","package ‘car’ was built under R version 3.4.3"
+"0","scatterplotMatrix(FullData[,c(3:6)], diagonal='histogram',reg.line=NULL , smoother=NULL,legend.plot=F)"

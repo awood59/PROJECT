@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1518107849265.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "B592E03A",
+    "lastKnownWriteTime" : 1519926216,
+    "last_content_update" : 1520020809336,
+    "path" : "~/Desktop/Texts/GitHub/PROJECT/datacleaning.Rmd",
+    "project_path" : "datacleaning.Rmd",
+    "properties" : {
+        "cursorPosition" : "10,0",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 11,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
