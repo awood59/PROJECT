@@ -1,0 +1,180 @@
+---
+title: "Governance Analytics Final Project"
+author: "Alex Woodward"
+date: "3/6/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Governance Analytics Final Project - Alex Woodward
+
+## **Executive Summary:**
+Here I will add a description for the executive summary. xx
+
+## **Getting the Data**
+Explain the data and where it came from.
+
+```{r cars}
+temp = tempfile(fileext = ".xlsx") # use always with Excel
+dataURL <- "https://github.com/awood59/PROJECT/raw/master/DropOut.xlsx" # This is the link to the first dataset. Washington State School District Graduation and Drop Out Rates
+download.file(dataURL, destfile=temp, mode='wb')
+# now get it:
+DropOut = read_excel(temp, sheet =1)
+head(DropOut,2)
+```
+```{r}
+# Now I will retrieve a second data file with information about Washington State Enrollment Statistics.
+temp = tempfile(fileext = ".xlsx") # use always with Excel
+dataURL <- "https://github.com/awood59/PROJECT/raw/master/EnrollmentWA.xlsx" 
+download.file(dataURL, destfile=temp, mode='wb')
+# now get it:
+EnrollmentWA = read_excel(temp, sheet =1)
+head(EnrollmentWA,2)
+```
+```{r}
+# Finally, one last data file. This is a file with financial statistics per school district. I will clean this data as the district names are coded with an attached number, which I need to remove before merging with the other files. In the end, I cleaned the file with Excel, but I will include information for cleaning via R below.
+temp = tempfile(fileext = ".xlsx") # use always with Excel
+dataURL <- "https://github.com/awood59/PROJECT/raw/master/WAFinance1.xlsx" 
+download.file(dataURL, destfile=temp, mode='wb')
+# now get it:
+WAFinance1 = read_excel(temp, sheet =1)
+head(WAFinance1,2)
+```
+
+## Data Cleaning
+# For the purpose of data cleaning, I first downloaded the orgingal data file.
+```{r}
+dataLink='https://raw.githubusercontent.com/awood59/data/gh-pages/SchoolFinanceEdit.csv'
+```
+```{r}
+# Next I read the data.
+theData=read.csv(dataLink,stringsAsFactors = F,strip.white = T)
+```
+```{r}
+# Then checked the names of the columns.
+names(theData)
+```
+```{r}
+table(theData$STATE)
+```
+
+```{r}
+WAData=theData[theData$STATE=='Washington',]
+row.names(WAData)=NULL
+```
+
+
+```{r}
+WAData$NAME
+```
+
+```{r}
+library(stringr)
+
+(WAData$NAMEbad=unlist(lapply(WAData$NAME,word,-1)))
+
+```
+
+
+```{r}
+WAData$NAMEOK=NA
+for (pos in 1:nrow(WAData)){
+    if(WAData$NAMEbad[pos]!="DISTRICT"){
+    cleanValue=sub(WAData$NAMEbad[pos],'',WAData$NAME[pos])
+    WAData$NAMEOK[pos]=trimws(cleanValue)
+    }else{WAData$NAMEOK[pos]=WAData$NAME[pos]}
+}
+```
+
+```{r}
+table(unlist(lapply(WAData$NAMEOK,word,-1)))
+```
+
+```{r}
+WAData[word(WAData$NAMEOK,-1)=='DIST',]
+```
+
+```{r}
+WAData$NAMEbad=unlist(lapply(WAData$NAMEOK,word,-1))
+```
+
+
+```{r}
+for (pos in 1:nrow(WAData)){
+    if (WAData$NAMEbad[pos]=='DIST'){
+        cleanValue=sub("DIST",'DISTRICT',WAData$NAMEOK[pos])
+        WAData$NAMEOK[pos]=trimws(cleanValue)
+        }
+}
+```
+
+
+```{r}
+table(unlist(lapply(WAData$NAMEOK,word,-1)))
+```
+
+
+
+```{r}
+(lastBad=names(table(unlist(lapply(WAData$NAMEOK,word,-1))))[-c(4,5)])
+```
+
+
+
+
+```{r}
+for (pos in 1:nrow(WAData)){
+    if (WAData$NAMEbad[pos]%in% lastBad){
+        cleanValue=sub(WAData$NAMEbad[pos],'',WAData$NAMEOK[pos])
+        WAData$NAMEOK[pos]=trimws(cleanValue)
+        }
+}
+
+```
+
+```{r}
+table(unlist(lapply(WAData$NAMEOK,word,-1)))
+```
+```{r}
+WAData[word(WAData$NAMEOK,-1)=='C',]
+```
+
+```{r}
+WAData[word(WAData$NAMEOK,-1)=='C',]$NAMEOK='BREMERTON SCHOOL DISTRICT'
+```
+
+
+```{r}
+table(unlist(lapply(WAData$NAMEOK,word,-1)))
+```
+
+```{r}
+length(WAData$NAMEOK)
+```
+
+```{r}
+length(unique(WAData$NAMEOK))
+```
+
+```{r}
+names(WAData)
+```
+
+```{r, eval=FALSE}
+numericColumns =names(WAData)[4:14]
+aggregateBY='NAMEOK'
+(cleanWA=aggregate(WAData[,numericColumns], by=list(WAData[,aggregateBY]), sum ))
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
