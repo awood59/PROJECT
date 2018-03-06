@@ -1,0 +1,3 @@
+"0","length(df)==length(unique(df$`District Name`)"
+"2","Error: Incomplete expression: length(df)==length(unique(df$`District Name`)
+"

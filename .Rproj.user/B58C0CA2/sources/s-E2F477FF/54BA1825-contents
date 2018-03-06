@@ -23,7 +23,7 @@ summary(FullData)
 df=FullData
 ```
 ```{r}
-length(df$)==length(unique(df$Country))
+length(df)==length(unique(df$`District Name`)
 ```
 
 ```{r}

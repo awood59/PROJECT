@@ -5,7 +5,7 @@
     "dirty" : true,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "2127200212",
+    "hash" : "0",
     "id" : "B9D5313B",
     "lastKnownWriteTime" : 1519925566,
     "last_content_update" : 1520015929548,
@@ -13,8 +13,8 @@
     "project_path" : "Merged1-2.Rmd",
     "properties" : {
         "chunk_output_type" : "inline",
-        "cursorPosition" : "11,6",
-        "scrollLine" : "9",
+        "cursorPosition" : "56,0",
+        "scrollLine" : "42",
         "tempName" : "Untitled7"
     },
     "relative_order" : 8,
