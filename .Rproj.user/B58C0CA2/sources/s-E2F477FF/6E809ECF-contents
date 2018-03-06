@@ -259,19 +259,22 @@ mnVar=mean(var,na.rm = T)
 sdVar=sd(var,na.rm = T)
 ```
 ```{r}
-# Selecting a variable
-var2=data$`State Revenue`
 
-# saving mean and sd:
-mnVar2=mean(var2,na.rm = T)
-sdVar2=sd(var2,na.rm = T)
-
-
+library(ggplot2)
 #plotting
-base = ggplot(data, aes(x=var2))
-hist = base + geom_histogram(fill="green", 
-                             color='grey',
-                          aes(y=..density..))
+ggplot(FullData, aes(x= Cohort_dropout_rate, y = State_Revenue)) + geom_point(size = 2.5, color="navy") + xlab("Cohort dropout rate") + ylab("State Revenue") + ggtitle("Cohort dropout rate vs State Revenue")
+```
+```{r}
+boxplot(FullData$`State Revenue`~FullData$`Local Revenue`) #Creating Box Plot between two variables, State and Local Revenue
+```
+```{r}
+
+#Multivariate Scatter Plot
+
+library(RColorBrewer)
+
+plot(x=FullData$`Cohort dropout rate`,y=FullData$`State Revenue`)
+plot(FullData,col=brewer.pal(3,"Set1"))
 ```
 
 

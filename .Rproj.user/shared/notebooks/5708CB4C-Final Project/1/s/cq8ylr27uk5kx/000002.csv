@@ -1,3 +1,4 @@
+"0","# I viewed the data counts per state."
 "0","table(theData$STATE)"
 "1","
 "
