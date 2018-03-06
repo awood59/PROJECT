@@ -1,6 +1,0 @@
-"0","# Selecting a variable"
-"0","var=data$`Cohort dropout rate`"
-"0","# saving mean and sd:"
-"0","mnVar=mean(var,na.rm = T)"
-"2","argument is not numeric or logical: returning NA"
-"0","sdVar=sd(var,na.rm = T)"

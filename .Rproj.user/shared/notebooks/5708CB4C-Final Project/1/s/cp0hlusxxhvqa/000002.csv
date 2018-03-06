@@ -1,3 +1,3 @@
-"0","# Removed data that wasn't from Washington."
+"0","# Remove data that isn't from Washington."
 "0","WAData=theData[theData$STATE=='Washington',]"
 "0","row.names(WAData)=NULL"

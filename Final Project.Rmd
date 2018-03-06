@@ -20,6 +20,10 @@ Here I will add a description for the executive summary. xx
 Explain the data and where it came from.
 
 ```{r cars}
+
+# Libraries
+library(readxl)
+
 # This is the link to the first dataset. Washington State School District Graduation and Drop Out Rates
 
 temp = tempfile(fileext = ".xlsx") 
@@ -52,50 +56,57 @@ head(WAFinance1,2)
 ```
 
 ## Data Cleaning
-For the purpose of data cleaning, I first downloaded the orgingal data file. This data file had a school district column that included numbers. In order to merge the datasets, the data was cleaned to remove the numbers from the column.
+For the purpose of data cleaning, first download the orgingal data file. This data file has a school district column that includes numbers. In order to merge the datasets, the data is cleaned to remove the numbers from the column.
 ```{r}
 dataLink='https://raw.githubusercontent.com/awood59/data/gh-pages/SchoolFinanceEdit.csv'
 ```
 ```{r}
 
-# Next I read the data.
+# Now read the data.
 
 theData=read.csv(dataLink,stringsAsFactors = F,strip.white = T)
 ```
 ```{r}
 
-# Then checked the names of the columns.
+# Check the names of the columns.
 
 names(theData)
 ```
 
 ```{r}
 
-# I viewed the data counts per state.
+# View the data counts per state.
 
 table(theData$STATE)
 ```
 
 ```{r}
 
-# Removed data that wasn't from Washington.
+# Remove data that isn't from Washington.
 
 WAData=theData[theData$STATE=='Washington',]
 row.names(WAData)=NULL
 ```
 
 ```{r}
-# Viewed Washington Data.
+
+# Now view Washington Data.
 
 WAData$NAME
 ```
 
 ```{r}
+
+# Now remove numbers.
+
 library(stringr)
 (WAData$NAMEbad=unlist(lapply(WAData$NAME,word,-1)))
 ```
 
 ```{r}
+
+# Conintue with the rest of data cleaning.
+
 WAData$NAMEOK=NA
 for (pos in 1:nrow(WAData)){
     if(WAData$NAMEbad[pos]!="DISTRICT"){
@@ -171,9 +182,7 @@ numericColumns =names(WAData)[4:14]
 aggregateBY='NAMEOK'
 (cleanWA=aggregate(WAData[,numericColumns], by=list(WAData[,aggregateBY]), sum ))
 
-## Including Plots.
-
-You can also embed plots, for example:
+# Including Plots. You can also embed plots, for example:
 
 ```{r pressure, echo=FALSE}
 plot(pressure)
@@ -182,13 +191,13 @@ plot(pressure)
 ## **Merging the Data**
 
 ```{r}
-gradenr=merge(Enrollment,Grad,by.x='District Code',by.y="District" )
+gradenr=merge(EnrollmentWA,DropOut,by.x='District Code',by.y="District Code" )
 ```
 
 ```{r}
 # As the Enrollment and Drop Out Rate datasets both had district codes, merge via "District Code".
 
-DropOutData <- merge(DropOut, Enrollment, by="District Code")
+DropOutData <- merge(DropOut, EnrollmentWA, by="District Code")
 ```
 
 ```{r}
@@ -207,28 +216,35 @@ str(FullData)
 # Now we can look at a summary of the data.
 summary(FullData)
 ```
+```{r}
+# Linear Regression of State Revenue and Dropout Rate
+
+LinRegRevenue=lm(FullData$`State Revenue`~ `Cohort dropout rate`,y=FullData$`State Revenue`, data = FullData)
+
+summary(LinRegRevenue)
+```
 
 ```{r}
-## Now I'd like to see if the updated data set has any missing values.
+## Now we see if the updated data set has any missing values.
 table(is.na(FullData))
 ```
 
 ```{r}
-## Good, no missing values. Now I want to look at high school dropout rates.
+## Good, no missing values. Now look at high school dropout rates.
 View(FullData)
 
 FullData$`Cohort dropout rate`
 ```
 
 ```{r}
-# Now I will look at some descriptive statistics for State Revenues per district.
+# Descriptive statistics for State Revenues per district.
 
 summary(FullData$'State Revenue')
 ```
 
 ```{r}
 
-# Now we get the standard deviation and the coefficient of variation:
+# Standard deviation:
 sd(FullData$'State Revenue',na.rm = T)
 ```
 ```{r}
@@ -236,6 +252,8 @@ sd(FullData$'State Revenue',na.rm = T)
 sd(FullData$'State Revenue',na.rm = T)/mean(FullData$'State Revenue',na.rm = T)
 ```
 ```{r}
+
+library(DescTools)
 
 # Skewness
 Skew(FullData$'State Revenue',na.rm = T)
@@ -246,38 +264,78 @@ Skew(FullData$'State Revenue',na.rm = T)
 Kurt(FullData$'State Revenue',na.rm = T)
 ```
 ```{r}
-# keeping non missing:
+
+# Keeping Non Missing:
 data=FullData[is.finite(FullData$'Cohort dropout rate'),]
 ```
 
 ```{r}
-# Selecting a variable
-var=data$`Cohort dropout rate`
 
-# saving mean and sd:
+# Selecting a variable
+var2=data$`State Revenue`
+
+# Saving mean and sd:
+mnVar2=mean(var2,na.rm = T)
+sdVar2=sd(var2,na.rm = T)
+
+library(ggplot2)
+
+#Multivariate Scatter Plot State Revenue
+plot(x=FullData$`Adjusted 5-Year Cohort Graduation Rate`,y=FullData$`State Revenue`) 
+```
+```{r}
+
+#Multivariate Scatter Plot Local Revenue
+plot(x=FullData$`Adjusted 5-Year Cohort Graduation Rate`,y=FullData$`Local Revenue`) 
+
+```
+
+```{r}
+
+#Multivariate Scatter Plot Total Revenue
+plot(x=FullData$`Adjusted 5-Year Cohort Graduation Rate`,y=FullData$`Total Revenue`) 
+```
+```{r}
+
+# Now plot a histogram.
+
+data=FullData[is.finite(FullData$`State Revenue`),]
+```
+```{r}
+var=data$`State Revenue`
+```
+```{r}
 mnVar=mean(var,na.rm = T)
 sdVar=sd(var,na.rm = T)
 ```
 ```{r}
-# Selecting a variable
-var2=data$`State Revenue`
-
-# saving mean and sd:
-mnVar2=mean(var2,na.rm = T)
-sdVar2=sd(var2,na.rm = T)
-
-
-#plotting
-base = ggplot(data, aes(x=var2))
-hist = base + geom_histogram(fill="green", 
-                             color='grey',
-                          aes(y=..density..))
+library(ggplot2)
 ```
 
+```{r}
+base = ggplot(data, aes(x=var))
+hist = base + geom_histogram(fill="blue",
+                             color='grey',
+                             aes(y=..density..))
+```
+```{r}
+histAndNormal = hist + stat_function(fun=dnorm,
+                                     color="red",
+                                     args=list(mean=mnVar,sd=sdVar))
+```
+```{r}
+histAndNormal
+```
+```{r}
+
+```
 
 
 ## **Import Washington State School Districts Map**
 ```{r}
+
+# Import Map Files
+
 compressedMap= 'https://github.com/awood59/PROJECT/raw/master/tl_2013_53_unsd.zip'
 ```
 
@@ -301,5 +359,6 @@ wazipMap <- rgdal::readOGR("tl_2013_53_unsd.shp",stringsAsFactors=F)
 plot(wazipMap,col='green')
 ```
 ## Next Step
+I will follow up by linking the map and plotting graduation rates via district.
 
 
