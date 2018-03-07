@@ -336,7 +336,7 @@ histAndNormal
 
 # Import Map Files
 
-compressedMap= 'https://github.com/awood59/PROJECT/raw/master/tl_2013_53_unsd.zip'
+compressedMap= 'https://github.com/awood59/PROJECT/raw/master/WAOFM%20-%20GIS%20-%20School%20District%20Boundary.zip'
 ```
 
 ```{r}
@@ -352,7 +352,7 @@ unzip(temp)
 
 ```{r}
 library(rgdal)
-wazipMap <- rgdal::readOGR("tl_2013_53_unsd.shp",stringsAsFactors=F)
+wazipMap <- rgdal::readOGR("geo_export_4f6f751a-05f3-48de-adf9-962964ba024e.shp",stringsAsFactors=F)
 ```
 
 ```{r}
@@ -361,4 +361,55 @@ plot(wazipMap,col='green')
 ## Next Step
 I will follow up by linking the map and plotting graduation rates via district.
 
+```{r}
+names(wazipMap)
+```
+```{r}
+list(wazipMap@data$name)
+```
+```{r}
+nrow(wazipMap)
+```
+
+```{r}
+names(FullData)
+```
+
+
+```{r}
+str(wazipMap$name)
+```
+```{r}
+str(FullData$`District Name`)
+```
+
+```{r}
+contribWAmap=merge(wazipMap,FullData, by.x='name', by.y='District Name',all.x=F)
+```
+```{r}
+nrow(contribWAmap)
+```
+```{r}
+nrow(wazipMap)
+```
+```{r}
+plot(wazipMap,col='white')
+plot(contribWAmap,col='light blue',border='grey',add=T)
+```
+```{r}
+varToPLot=contribWAmap$contribDen
+
+numberOfClasses = 5
+colorForScale='YlGnBu'
+colors = brewer.pal(numberOfClasses, colorForScale)
+intervals <- classIntervals(varToPLot, numberOfClasses, 
+                            style = "quantile",
+                            dataPrecision=2)
+colorPallette <- findColours(intervals, colors)
+```
+
+```{r}
+library(RColorBrewer)
+library(classInt)
+```
 

@@ -1,3 +1,0 @@
-"0","numericColumns =names(WAData)[4:14]"
-"0","aggregateBY='NAMEOK'"
-"0","(cleanWA=aggregate(WAData[,numericColumns], by=list(WAData[,aggregateBY]), sum ))"

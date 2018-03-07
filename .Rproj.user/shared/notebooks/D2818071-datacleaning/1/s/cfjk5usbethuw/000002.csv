@@ -1,2 +1,0 @@
-"0","WAData=theData[theData$STATE=='Washington',]"
-"0","row.names(WAData)=NULL"
