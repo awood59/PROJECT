@@ -1,2 +1,0 @@
-"0","# Keeping Non Missing:"
-"0","data=FullData[is.finite(FullData$'Cohort dropout rate'),]"

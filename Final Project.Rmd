@@ -1,8 +1,12 @@
 ---
 title: "Governance Analytics Final Project"
 author: "Alex Woodward"
-date: "3/6/2018"
-output: pdf_document
+date: "3/12/2018"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -18,6 +22,7 @@ Here I will add a description for the executive summary. xx
 ## **Getting the Data**
 
 Explain the data and where it came from.
+
 
 ```{r cars}
 
@@ -35,19 +40,16 @@ DropOut = read_excel(temp, sheet =1)
 head(DropOut,2)
 ```
 
+Now I will retrieve a second data file with information about Washington State Enrollment Statistics.
 ```{r}
-## Now I will retrieve a second data file with information about Washington State Enrollment Statistics.
-
 temp = tempfile(fileext = ".xlsx")
 dataURL <- "https://github.com/awood59/PROJECT/raw/master/EnrollmentWA.xlsx" 
 download.file(dataURL, destfile=temp, mode='wb')
 EnrollmentWA = read_excel(temp, sheet =1)
 head(EnrollmentWA,2)
 ```
+Finally, one last data file. This is a file with financial statistics per school district. I will clean this data as the district names are coded with an attached number, which I need to remove before merging with the other files. In the end, I cleaned the file with Excel, but I will include information for cleaning via R below.
 ```{r}
-
-# Finally, one last data file. This is a file with financial statistics per school district. I will clean this data as the district names are coded with an attached number, which I need to remove before merging with the other files. In the end, I cleaned the file with Excel, but I will include information for cleaning via R below.
-
 temp = tempfile(fileext = ".xlsx") 
 dataURL <- "https://github.com/awood59/PROJECT/raw/master/WAFinance1.xlsx" 
 download.file(dataURL, destfile=temp, mode='wb')
@@ -57,56 +59,42 @@ head(WAFinance1,2)
 
 ## Data Cleaning
 For the purpose of data cleaning, first download the orgingal data file. This data file has a school district column that includes numbers. In order to merge the datasets, the data is cleaned to remove the numbers from the column.
+
 ```{r}
 dataLink='https://raw.githubusercontent.com/awood59/data/gh-pages/SchoolFinanceEdit.csv'
 ```
 ```{r}
 
 # Now read the data.
-
 theData=read.csv(dataLink,stringsAsFactors = F,strip.white = T)
 ```
 ```{r}
 
 # Check the names of the columns.
-
 names(theData)
 ```
-
+Now let's view the data counts per state.
 ```{r}
-
-# View the data counts per state.
-
 table(theData$STATE)
 ```
-
+Now we remove data that isn't from Washington.
 ```{r}
-
-# Remove data that isn't from Washington.
-
 WAData=theData[theData$STATE=='Washington',]
 row.names(WAData)=NULL
 ```
 
+Now we can look at the Washington names.
 ```{r}
-
-# Now view Washington Data.
-
 WAData$NAME
 ```
 
+Next remove the unnecessary numbers
 ```{r}
-
-# Now remove numbers.
-
 library(stringr)
 (WAData$NAMEbad=unlist(lapply(WAData$NAME,word,-1)))
 ```
-
+Conintue with the rest of data cleaning.
 ```{r}
-
-# Conintue with the rest of data cleaning.
-
 WAData$NAMEOK=NA
 for (pos in 1:nrow(WAData)){
     if(WAData$NAMEbad[pos]!="DISTRICT"){
@@ -181,135 +169,199 @@ names(WAData)
 numericColumns =names(WAData)[4:14]
 aggregateBY='NAMEOK'
 (cleanWA=aggregate(WAData[,numericColumns], by=list(WAData[,aggregateBY]), sum ))
-
-# Including Plots. You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
 ## **Merging the Data**
+As the Enrollment and Drop Out Rate datasets both had district codes, merge via "District Code".
 
 ```{r}
 gradenr=merge(EnrollmentWA,DropOut,by.x='District Code',by.y="District Code" )
 ```
 
 ```{r}
-# As the Enrollment and Drop Out Rate datasets both had district codes, merge via "District Code".
-
 DropOutData <- merge(DropOut, EnrollmentWA, by="District Code")
 ```
 
+As the Financials and the new datasets both had district codes, merge via "District Name".
 ```{r}
-# As the Financials and the new datasets both had district codes, merge via "District Name".
-
 FullData <- merge(WAFinance1, DropOutData, by="District Name")
 ```
 
+Now we can take a look at the data frame variable.
 ```{r}
-# Now we can take a look at the data frame variable.
-
 str(FullData)
 ```
 
+Now we can look at a summary of the data.
 ```{r}
-# Now we can look at a summary of the data.
 summary(FullData)
 ```
+
+Now we see if the updated data set has any missing values.
 ```{r}
-# Linear Regression of State Revenue and Dropout Rate
-
-LinRegRevenue=lm(FullData$`State Revenue`~ `Cohort dropout rate`,y=FullData$`State Revenue`, data = FullData)
-
-summary(LinRegRevenue)
-```
-
-```{r}
-## Now we see if the updated data set has any missing values.
 table(is.na(FullData))
 ```
 
+Now let's remove NA's.
 ```{r}
-## Good, no missing values. Now look at high school dropout rates.
-View(FullData)
-
-FullData$`Cohort dropout rate`
+FullData <- na.omit(FullData)
 ```
 
+Perfect, and now I want to set the graduation and dropout rates to numeric values.
 ```{r}
-# Descriptive statistics for State Revenues per district.
-
-summary(FullData$'State Revenue')
-```
-
-```{r}
-
-# Standard deviation:
-sd(FullData$'State Revenue',na.rm = T)
+FullData$`Adjusted 5-Year Cohort Graduation Rate` <- as.numeric(as.character(FullData$`Adjusted 5-Year Cohort Graduation Rate`))
 ```
 ```{r}
-# Coefficient of Variation
-sd(FullData$'State Revenue',na.rm = T)/mean(FullData$'State Revenue',na.rm = T)
+FullData$`Cohort dropout rate` <- as.numeric(as.character(FullData$`Cohort dropout rate`))
+```
+
+Good, no missing values. Now let's see which districts have the higest and lowest Local, State, and Total Revenues
+```{r}
+FullData[which.max(FullData$`State Revenue`),] 
 ```
 ```{r}
+FullData[which.max(FullData$`Total Revenue`),] 
+```
+```{r}
+FullData[which.max(FullData$`Local Revenue`),] 
+```
+```{r}
+FullData[which.min(FullData$`State Revenue`),] 
+```
+```{r}
+FullData[which.min(FullData$`Total Revenue`),] 
+```
+```{r}
+FullData[which.min(FullData$`Local Revenue`),] 
+```
+We can see 
 
+Ok, now let's look at the districts with the lowest graduation rates.
+```{r}
+FullData[which.min(FullData$`Adjusted 5-Year Cohort Graduation Rate`),] 
+```
+```{r}
+FullData[order(FullData$`Adjusted 5-Year Cohort Graduation Rate`),]
+```
+
+I am currious what the order of School Districts with highest revenue rates looks like. 
+```{r}
+FullData[order(-FullData$`Total Revenue`),]
+```
+
+Now I'd like to see descriptive statistics for total revenue.
+```{r}
+summary(FullData$'Total Revenue')
+```
+
+Standard deviation:
+```{r}
 library(DescTools)
-
-# Skewness
-Skew(FullData$'State Revenue',na.rm = T)
-```
-```{r}
-
-# Kurtosis
-Kurt(FullData$'State Revenue',na.rm = T)
-```
-```{r}
-
-# Keeping Non Missing:
-data=FullData[is.finite(FullData$'Cohort dropout rate'),]
+sd(FullData$`Total Revenue`,na.rm = T)
 ```
 
+Coefficient of Variation
 ```{r}
+sd(FullData$`Total Revenue`,na.rm = T)/mean(FullData$`Total Revenue`,na.rm = T)
+```
 
-# Selecting a variable
+Skewness
+```{r}
+Skew(FullData$`State Revenue`,na.rm = T)
+```
+
+Kurtosis
+```{r}
+Kurt(FullData$`State Revenue`,na.rm = T)
+```
+
+Now let's look start creating a correlation.
+```{r}
+data=FullData[is.finite(FullData$`Adjusted 5-Year Cohort Graduation Rate`),]
+```
+```{r}
+hist(FullData$`Adjusted 5-Year Cohort Graduation Rate`)
+```
+```{r}
+explanans=names(FullData)[c(3,4,9)]
+for (x in explanans){
+    par=cbind(FullData[,x],FullData$`Adjusted 5-Year Cohort Graduation Rate`)
+    p=cor.test(FullData[,x],FullData$`Adjusted 5-Year Cohort Graduation Rate`)
+    print(paste("Pearson:",p$estimate," - Is significative?",p$p.value<0.05))
+}
+```
+```{r}
+cor(FullData[explanans])
+```
+```{r}
+row.names(FullData)=FullData$`District Name`
+```
+
+```{r}
+names(FullData)
+```
+
+Let's run a linear regression to see if there are any correlations.
+```{r}
+LinRegEPI = lm(`Adjusted 5-Year Cohort Graduation Rate` ~ `Total Revenue` + `State Revenue` + `Local Revenue` + `K-12 Total`, 
+               data = FullData)
+```
+
+Now we can view a summary.
+```{r}
+summary(LinRegEPI)
+```
+
+Now we will collect the results of the regression.
+```{r}
+results=coef(summary(LinRegEPI))
+
+data.frame(Coefficient=results[,1],Significant=results[,4]<0.05)
+
+summary(LinRegEPI)$adj.r.squared
+```
+
+Let's develop scatter plots. First, we need to assign variables.
+```{r}
 var2=data$`State Revenue`
 
 # Saving mean and sd:
+
 mnVar2=mean(var2,na.rm = T)
 sdVar2=sd(var2,na.rm = T)
 
 library(ggplot2)
 
-#Multivariate Scatter Plot State Revenue
+#Multivariate Scatter Plot State Revenue.
+
 plot(x=FullData$`Adjusted 5-Year Cohort Graduation Rate`,y=FullData$`State Revenue`) 
 ```
+
 ```{r}
 
-#Multivariate Scatter Plot Local Revenue
+#Multivariate Scatter Plot Local Revenue.
+
 plot(x=FullData$`Adjusted 5-Year Cohort Graduation Rate`,y=FullData$`Local Revenue`) 
 
 ```
 
 ```{r}
 
-#Multivariate Scatter Plot Total Revenue
+#Multivariate Scatter Plot Total Revenue.
+
 plot(x=FullData$`Adjusted 5-Year Cohort Graduation Rate`,y=FullData$`Total Revenue`) 
 ```
+
+Now plot a histogram of Graduation Rates.
 ```{r}
-
-# Now plot a histogram.
-
 data=FullData[is.finite(FullData$`State Revenue`),]
 ```
 ```{r}
-var=data$`State Revenue`
+var=data$`Adjusted 5-Year Cohort Graduation Rate`
 ```
 ```{r}
 mnVar=mean(var,na.rm = T)
 sdVar=sd(var,na.rm = T)
-```
-```{r}
-library(ggplot2)
 ```
 
 ```{r}
@@ -326,12 +378,9 @@ histAndNormal = hist + stat_function(fun=dnorm,
 ```{r}
 histAndNormal
 ```
-```{r}
-
-```
-
 
 ## **Import Washington State School Districts Map**
+
 ```{r}
 
 # Import Map Files
@@ -358,25 +407,34 @@ wazipMap <- rgdal::readOGR("geo_export_4f6f751a-05f3-48de-adf9-962964ba024e.shp"
 ```{r}
 plot(wazipMap,col='green')
 ```
+
 ## Next Step
 I will follow up by linking the map and plotting graduation rates via district.
 
 ```{r}
+
+# I need to see which columns can be connected in the data and the map. We can see we have the column 'name' in the map file.
+
 names(wazipMap)
 ```
 ```{r}
+
+# Fortunately, they are the same as the District Name in the Data file.
+
 list(wazipMap@data$name)
-```
-```{r}
-nrow(wazipMap)
 ```
 
 ```{r}
+
+# We can check that to verify.
+
 names(FullData)
 ```
 
-
 ```{r}
+
+# Let's run one last string to be absolutely sure.
+
 str(wazipMap$name)
 ```
 ```{r}
@@ -384,22 +442,40 @@ str(FullData$`District Name`)
 ```
 
 ```{r}
+
+## Everything looks good. Now we merge the map file with the data file by District Name. 
+
 contribWAmap=merge(wazipMap,FullData, by.x='name', by.y='District Name',all.x=F)
 ```
+
 ```{r}
+# I want to see the number of rows in the new map.
 nrow(contribWAmap)
 ```
+
 ```{r}
-nrow(wazipMap)
-```
-```{r}
+
+## Now we plot the map to see that we are representing missing data correctly.
+
 plot(wazipMap,col='white')
 plot(contribWAmap,col='light blue',border='grey',add=T)
 ```
-```{r}
-varToPLot=contribWAmap$contribDen
 
-numberOfClasses = 5
+```{r}
+
+## We need to install the correct libraries.
+
+library(RColorBrewer)
+library(classInt)
+```
+
+```{r}
+
+## Next we assign the variable for plotting.
+
+varToPLot=contribWAmap$`Adjusted 5-Year Cohort Graduation Rate`
+
+numberOfClasses = 7
 colorForScale='YlGnBu'
 colors = brewer.pal(numberOfClasses, colorForScale)
 intervals <- classIntervals(varToPLot, numberOfClasses, 
@@ -409,7 +485,79 @@ colorPallette <- findColours(intervals, colors)
 ```
 
 ```{r}
-library(RColorBrewer)
-library(classInt)
+
+## This code is used to assign legend text, colors, and location.
+
+legendText="Graduation Rates \n (White is Missing)"
+shrinkLegend=0.6
+title="Graduation Rates Via School District in Washington State 2015"
 ```
+```{r}
+plot(wazipMap,col='white',main=title)
+
+# Second change: col = colors[varToPLot]
+plot(contribWAmap, col = colorPallette,border='black',add=TRUE)
+legend('bottomleft', legend = names(attr(colorPallette, "table")), 
+       fill = attr(colorPallette, "palette"), cex = shrinkLegend, 
+       bty = "n",
+       title=legendText)
+```
+```{r}
+
+# Now I want to see a map of Local Revenue. We create a new variable to plot. I also chose to change the colors.
+
+varToPLot2=contribWAmap$`Local Revenue`
+
+numberOfClasses = 7
+colorForScale='YlOrRd'
+colors = brewer.pal(numberOfClasses, colorForScale)
+intervals <- classIntervals(varToPLot2, numberOfClasses, 
+                            style = "quantile",
+                            dataPrecision=2)
+colorPallette <- findColours(intervals, colors)
+
+legendText="Total Revenue \n (White is Missing)"
+shrinkLegend=0.6
+title="Local Revenue Via School District in Washington State 2015"
+```
+```{r}
+plot(wazipMap,col='white',main=title)
+# second change: col = colors[varToPLot]
+plot(contribWAmap, col = colorPallette,border='black',add=TRUE)
+legend('bottomleft', legend = names(attr(colorPallette, "table")), 
+       fill = attr(colorPallette, "palette"), cex = shrinkLegend, 
+       bty = "n",
+       title=legendText)
+```
+```{r}
+
+## Lastly, I wanted to see a map of Total Revenue. Again, we create a new variable, and rerun the map.
+
+varToPLot3=contribWAmap$`Total Revenue`
+
+numberOfClasses = 7
+colorForScale='YlGnBu'
+colors = brewer.pal(numberOfClasses, colorForScale)
+intervals <- classIntervals(varToPLot3, numberOfClasses, 
+                            style = "quantile",
+                            dataPrecision=2)
+colorPallette <- findColours(intervals, colors)
+
+legendText="Total Revenue \n (White is Missing)"
+shrinkLegend=0.6
+title="Total Revenue Via School District in Washington State 2015"
+```
+```{r}
+plot(wazipMap,col='white',main=title)
+
+# second change: col = colors[varToPLot]
+
+plot(contribWAmap, col = colorPallette,border='black',add=TRUE)
+legend('bottomleft', legend = names(attr(colorPallette, "table")), 
+       fill = attr(colorPallette, "palette"), cex = shrinkLegend, 
+       bty = "n",
+       title=legendText)
+```
+
+
 
