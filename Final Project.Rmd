@@ -1,7 +1,7 @@
 ---
-title: "Governance Analytics Final Project"
+title: "Governance Analytics Final Project: Researching the Possible Connection of District Revenues and Graduation Rates"
 author: "Alex Woodward"
-date: "3/12/2018"
+date: "3/16/2018"
 output:
   pdf_document: default
   html_document:
@@ -13,16 +13,23 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Governance Analytics Final Project - Alex Woodward
+# Governance Analytics Final Project: Researching the Possible Connection of District Revenues and Graduation Rates - Alex Woodward
 
 ## **Executive Summary:**
 
-Here I will add a description for the executive summary. xx
+For the purpose of this paper, I aim to determine if revenue sources, particularly local revenue sources, have a sizable effect on district graduation rates. Washington State School districts often struggle to acquire revenue sources that are large enough to provide the teacher salaries and quality of education needed throughout the state. Many districts rely on local levies to fund expenses. These levies can be difficult to pass and have expiration dates. While school districts receive revenues from both the State and Federal Governments, I aim to answer the question of how much of a difference local revenue sources  have on the success of students. If local revenue sources are shown to have a large effect on success, additional data may prove useful in attempting to develop more permanent local revenue sources for public education.
+
+Through my analysis, I hope to determine if there is a connection between Washington State School District graduation rates, school district revenue from state sources, school district revenue from local sources, and total school district revenue. Using statistical analysis through R, I will determine if there is a correlation between the aforementioned variables and will assess which school districts in Washington State have the highest rates of graduation. My analysis focuses on public school enrollment. 
 
 ## **Getting the Data**
 
-Explain the data and where it came from.
+In order to determine the 
 
+For this research, I look at three forms of revenue: state, local and total revenue sources. The revenue information for this revenue source was taken from the US Census Annual Survey data. This survey was the 2015 Annual Survey of School System Finances, authorized by law under Title 13, United States Code, Sections 161 and 182. The most recent year available was 2015. The files were available in .cvs format.
+
+I also used information from the April 2015 Graduation and Dropout Statistics Annual Report from the Washington State Office of Superintendent of Public Instruction in order to determine district level graduation rates.
+
+Lasty, I used the 2015-2016 Enrollment rates from the  Washington State Office of Superintendent of Public Instruction.
 
 ```{r cars}
 
@@ -35,7 +42,7 @@ temp = tempfile(fileext = ".xlsx")
 dataURL <- "https://github.com/awood59/PROJECT/raw/master/DropOut.xlsx" 
 download.file(dataURL, destfile=temp, mode='wb')
 
-# now get it:
+# Now we get the data:
 DropOut = read_excel(temp, sheet =1)
 head(DropOut,2)
 ```
