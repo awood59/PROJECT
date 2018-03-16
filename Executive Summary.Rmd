@@ -1,0 +1,551 @@
+---
+title: "Governance Analytics Final Project: Researching the Possible Connection of District Revenues and Graduation Rates"
+author: "Alex Woodward"
+date: "3/16/2018"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Governance Analytics - Professor Magallanes
+
+## **Executive Summary:**
+
+For the purpose of this paper, I aim to determine if revenue sources, particularly local revenue sources, have a sizable effect on district graduation rates. Washington State School districts often struggle to acquire revenue sources that are large enough to provide the teacher salaries and quality of education needed throughout the state. Many districts rely on local levies to fund expenses. These levies can be difficult to pass and have expiration dates. While school districts receive revenues from both the State and Federal Governments, I aim to answer the question of how much of a difference local revenue sources  have on the success of students. If local revenue sources are shown to have a large effect on success, additional data may prove useful in attempting to develop more permanent local revenue sources for public education.
+
+Through my analysis, I hope to determine if there is a connection between Washington State School District graduation rates, school district revenue from state sources, school district revenue from local sources, and total school district revenue. Using statistical analysis through R, I will determine if there is a correlation between the aforementioned variables and will assess which school districts in Washington State have the highest rates of graduation. My analysis focuses on public school enrollment. 
+
+## **Getting the Data**
+For this research, I look at three forms of revenue: state, local and total revenue sources. The revenue information for this revenue source was taken from the US Census Annual Survey data. This survey was the 2015 Annual Survey of School System Finances, authorized by law under Title 13, United States Code, Sections 161 and 182. The most recent year available was 2015. The files were available in .cvs format.
+
+I also used information from the April 2015 Graduation and Dropout Statistics Annual Report from the Washington State Office of Superintendent of Public Instruction in order to determine district level graduation rates.
+
+Lastly, I used the 2015-2016 Enrollment rates from the  Washington State Office of Superintendent of Public Instruction.
+
+```{r cars}
+
+# Libraries
+library(readxl)
+
+# This is the link to the first dataset. Washington State School District Graduation and Drop Out Rates
+
+temp = tempfile(fileext = ".xlsx") 
+dataURL <- "https://github.com/awood59/PROJECT/raw/master/DropOut.xlsx" 
+download.file(dataURL, destfile=temp, mode='wb')
+
+# Now we get the data:
+DropOut = read_excel(temp, sheet =1)
+head(DropOut,2)
+```
+
+Now I will retrieve a second data file with information about Washington State Enrollment Statistics.
+```{r}
+temp = tempfile(fileext = ".xlsx")
+dataURL <- "https://github.com/awood59/PROJECT/raw/master/EnrollmentWA.xlsx" 
+download.file(dataURL, destfile=temp, mode='wb')
+EnrollmentWA = read_excel(temp, sheet =1)
+head(EnrollmentWA,2)
+```
+Finally, one last data file. This is a file with financial statistics per school district. I will clean this data as the district names are coded with an attached number, which I need to remove before merging with the other files. In the end, I cleaned the file with Excel, but I will include information for cleaning via R below.
+```{r}
+temp = tempfile(fileext = ".xlsx") 
+dataURL <- "https://github.com/awood59/PROJECT/raw/master/WAFinance1.xlsx" 
+download.file(dataURL, destfile=temp, mode='wb')
+WAFinance1 = read_excel(temp, sheet =1)
+head(WAFinance1,2)
+```
+
+## Data Cleaning
+For the purpose of data cleaning, first download the orgingal data file. This data file has a school district column that includes numbers. In order to merge the datasets, the data is cleaned to remove the numbers from the column.
+
+```{r}
+dataLink='https://raw.githubusercontent.com/awood59/data/gh-pages/SchoolFinanceEdit.csv'
+```
+```{r}
+
+# Now read the data.
+theData=read.csv(dataLink,stringsAsFactors = F,strip.white = T)
+```
+```{r}
+
+# Check the names of the columns.
+names(theData)
+```
+Now let's view the data counts per state.
+```{r}
+table(theData$STATE)
+```
+Now we remove data that isn't from Washington.
+```{r}
+WAData=theData[theData$STATE=='Washington',]
+row.names(WAData)=NULL
+```
+
+Now we can look at the Washington names.
+```{r}
+WAData$NAME
+```
+
+Next remove the unnecessary numbers
+```{r}
+library(stringr)
+(WAData$NAMEbad=unlist(lapply(WAData$NAME,word,-1)))
+```
+Conintue with the rest of data cleaning.
+```{r}
+WAData$NAMEOK=NA
+for (pos in 1:nrow(WAData)){
+    if(WAData$NAMEbad[pos]!="DISTRICT"){
+    cleanValue=sub(WAData$NAMEbad[pos],'',WAData$NAME[pos])
+    WAData$NAMEOK[pos]=trimws(cleanValue)
+    }else{WAData$NAMEOK[pos]=WAData$NAME[pos]}}
+```
+
+```{r}
+table(unlist(lapply(WAData$NAMEOK,word,-1)))
+```
+
+```{r}
+WAData[word(WAData$NAMEOK,-1)=='DIST',]
+```
+
+```{r}
+WAData$NAMEbad=unlist(lapply(WAData$NAMEOK,word,-1))
+```
+
+```{r}
+for (pos in 1:nrow(WAData)){
+    if (WAData$NAMEbad[pos]=='DIST'){
+        cleanValue=sub("DIST",'DISTRICT',WAData$NAMEOK[pos])
+        WAData$NAMEOK[pos]=trimws(cleanValue)}}
+```
+
+```{r}
+table(unlist(lapply(WAData$NAMEOK,word,-1)))
+```
+
+```{r}
+(lastBad=names(table(unlist(lapply(WAData$NAMEOK,word,-1))))[-c(4,5)])
+```
+
+```{r}
+for (pos in 1:nrow(WAData)){
+    if (WAData$NAMEbad[pos]%in% lastBad){
+        cleanValue=sub(WAData$NAMEbad[pos],'',WAData$NAMEOK[pos])
+        WAData$NAMEOK[pos]=trimws(cleanValue) }}
+
+```
+
+```{r}
+table(unlist(lapply(WAData$NAMEOK,word,-1)))
+```
+```{r}
+WAData[word(WAData$NAMEOK,-1)=='C',]
+```
+
+```{r}
+WAData[word(WAData$NAMEOK,-1)=='C',]$NAMEOK='BREMERTON SCHOOL DISTRICT'
+```
+
+```{r}
+table(unlist(lapply(WAData$NAMEOK,word,-1)))
+```
+
+```{r}
+length(WAData$NAMEOK)
+```
+
+```{r}
+length(unique(WAData$NAMEOK))
+```
+
+```{r}
+names(WAData)
+```
+
+```{r, eval=FALSE}
+numericColumns =names(WAData)[4:14]
+aggregateBY='NAMEOK'
+(cleanWA=aggregate(WAData[,numericColumns], by=list(WAData[,aggregateBY]), sum ))
+```
+
+## **Merging the Data**
+As the Enrollment and Drop Out Rate datasets both had district codes, merge via "District Code".
+
+```{r}
+gradenr=merge(EnrollmentWA,DropOut,by.x='District Code',by.y="District Code" )
+```
+
+```{r}
+DropOutData <- merge(DropOut, EnrollmentWA, by="District Code")
+```
+
+As the Financials and the new datasets both had district codes, merge via "District Name".
+```{r}
+FullData <- merge(WAFinance1, DropOutData, by="District Name")
+```
+
+Now we can take a look at the data frame variable.
+```{r}
+str(FullData)
+```
+
+Now we can look at a summary of the data.
+```{r}
+summary(FullData)
+```
+
+Now we see if the updated data set has any missing values.
+```{r}
+table(is.na(FullData))
+```
+
+Now let's remove NA's.
+```{r}
+FullData <- na.omit(FullData)
+```
+
+Perfect, and now I want to set the graduation and dropout rates to numeric values.
+```{r}
+FullData$`Adjusted 5-Year Cohort Graduation Rate` <- as.numeric(as.character(FullData$`Adjusted 5-Year Cohort Graduation Rate`))
+```
+```{r}
+FullData$`Cohort dropout rate` <- as.numeric(as.character(FullData$`Cohort dropout rate`))
+```
+
+Good, no missing values. Now let's see which districts have the higest and lowest Local, State, and Total Revenues
+```{r}
+FullData[which.max(FullData$`State Revenue`),] 
+```
+```{r}
+FullData[which.max(FullData$`Total Revenue`),] 
+```
+```{r}
+FullData[which.max(FullData$`Local Revenue`),] 
+```
+```{r}
+FullData[which.min(FullData$`State Revenue`),] 
+```
+```{r}
+FullData[which.min(FullData$`Total Revenue`),] 
+```
+```{r}
+FullData[which.min(FullData$`Local Revenue`),] 
+```
+
+Ok, now let's look at the districts with the lowest graduation rates.
+```{r}
+FullData[which.min(FullData$`Adjusted 5-Year Cohort Graduation Rate`),] 
+```
+```{r}
+FullData[order(FullData$`Adjusted 5-Year Cohort Graduation Rate`),]
+```
+
+I am currious what the order of School Districts with highest revenue rates looks like. 
+```{r}
+FullData[order(-FullData$`Total Revenue`),]
+```
+
+Now I'd like to see descriptive statistics for total revenue.
+```{r}
+summary(FullData$'Total Revenue')
+```
+
+Standard deviation:
+```{r}
+library(DescTools)
+sd(FullData$`Total Revenue`,na.rm = T)
+```
+
+Coefficient of Variation
+```{r}
+sd(FullData$`Total Revenue`,na.rm = T)/mean(FullData$`Total Revenue`,na.rm = T)
+```
+
+Skewness
+```{r}
+Skew(FullData$`State Revenue`,na.rm = T)
+```
+
+Kurtosis
+```{r}
+Kurt(FullData$`State Revenue`,na.rm = T)
+```
+
+Now let's look for a possible correlation.
+```{r}
+data=FullData[is.finite(FullData$`Adjusted 5-Year Cohort Graduation Rate`),]
+```
+```{r}
+hist(FullData$`Adjusted 5-Year Cohort Graduation Rate`)
+```
+```{r}
+explanans=names(FullData)[c(3,4,9)]
+for (x in explanans){
+    par=cbind(FullData[,x],FullData$`Adjusted 5-Year Cohort Graduation Rate`)
+    p=cor.test(FullData[,x],FullData$`Adjusted 5-Year Cohort Graduation Rate`)
+    print(paste("Pearson:",p$estimate," - Is significative?",p$p.value<0.05))
+}
+```
+```{r}
+cor(FullData[explanans])
+```
+```{r}
+row.names(FullData)=FullData$`District Name`
+```
+
+```{r}
+names(FullData)
+```
+
+Let's run a linear regression to see if there are any correlations.
+```{r}
+LinRegEPI = lm(`Adjusted 5-Year Cohort Graduation Rate` ~ `Total Revenue` + `State Revenue` + `Local Revenue` + `K-12 Total`, 
+               data = FullData)
+```
+
+Now we can view a summary.
+```{r}
+summary(LinRegEPI)
+```
+
+Now we will collect the results of the regression.
+```{r}
+results=coef(summary(LinRegEPI))
+
+data.frame(Coefficient=results[,1],Significant=results[,4]<0.05)
+
+summary(LinRegEPI)$adj.r.squared
+```
+
+Next let's develop scatter plots to visualize our data. First, we need to assign variables.
+```{r}
+var2=data$`State Revenue`
+
+# Saving mean and sd:
+
+mnVar2=mean(var2,na.rm = T)
+sdVar2=sd(var2,na.rm = T)
+
+library(ggplot2)
+
+#Multivariate Scatter Plot State Revenue.
+
+plot(x=FullData$`Adjusted 5-Year Cohort Graduation Rate`,y=FullData$`State Revenue`) 
+```
+
+```{r}
+
+#Multivariate Scatter Plot Local Revenue.
+
+plot(x=FullData$`Adjusted 5-Year Cohort Graduation Rate`,y=FullData$`Local Revenue`) 
+
+```
+
+```{r}
+
+#Multivariate Scatter Plot Total Revenue.
+
+plot(x=FullData$`Adjusted 5-Year Cohort Graduation Rate`,y=FullData$`Total Revenue`) 
+```
+
+Now plot a histogram of Graduation Rates.
+```{r}
+data=FullData[is.finite(FullData$`State Revenue`),]
+```
+```{r}
+var=data$`Adjusted 5-Year Cohort Graduation Rate`
+```
+```{r}
+mnVar=mean(var,na.rm = T)
+sdVar=sd(var,na.rm = T)
+```
+
+```{r}
+base = ggplot(data, aes(x=var))
+hist = base + geom_histogram(fill="blue",
+                             color='grey',
+                             aes(y=..density..))
+```
+```{r}
+histAndNormal = hist + stat_function(fun=dnorm,
+                                     color="red",
+                                     args=list(mean=mnVar,sd=sdVar))
+```
+```{r}
+histAndNormal
+```
+
+## **Import Washington State School Districts Map**
+I want to use a map to visualize the district graduation rates and revenue levels.
+```{r}
+
+# Import Map Files
+
+compressedMap= 'https://github.com/awood59/PROJECT/raw/master/WAOFM%20-%20GIS%20-%20School%20District%20Boundary.zip'
+```
+
+```{r}
+library(utils)
+temp=tempfile()
+download.file(compressedMap, temp)
+unzip(temp)
+```
+
+```{r}
+(maps=list.files(pattern = 'shp'))
+```
+
+```{r}
+library(rgdal)
+wazipMap <- rgdal::readOGR("geo_export_4f6f751a-05f3-48de-adf9-962964ba024e.shp",stringsAsFactors=F)
+```
+
+```{r}
+plot(wazipMap,col='green')
+```
+
+## Next Step
+I will follow up by linking the map and plotting graduation rates via district.
+
+I need to see which columns can be connected in the data and the map. We can see we have the column 'name' in the map file.
+
+```{r}
+names(wazipMap)
+```
+
+Fortunately, they are the same as the District Name in the Data file.
+
+```{r}
+list(wazipMap@data$name)
+```
+
+We can check that to verify.
+```{r}
+names(FullData)
+```
+
+Let's run one last string to be absolutely sure.
+```{r}
+str(wazipMap$name)
+```
+```{r}
+str(FullData$`District Name`)
+```
+
+
+Everything looks good. Now we merge the map file with the data file by District Name. 
+```{r}
+contribWAmap=merge(wazipMap,FullData, by.x='name', by.y='District Name',all.x=F)
+```
+
+I want to see the number of rows in the new map.
+```{r}
+nrow(contribWAmap)
+```
+
+Now we plot the map to see that we are representing missing data correctly.
+```{r}
+plot(wazipMap,col='white')
+plot(contribWAmap,col='light blue',border='grey',add=T)
+```
+
+We need to install the correct libraries.
+```{r}
+library(RColorBrewer)
+library(classInt)
+```
+
+Next we assign the variable for plotting.
+```{r}
+varToPLot=contribWAmap$`Adjusted 5-Year Cohort Graduation Rate`
+
+numberOfClasses = 7
+colorForScale='YlGnBu'
+colors = brewer.pal(numberOfClasses, colorForScale)
+intervals <- classIntervals(varToPLot, numberOfClasses, 
+                            style = "quantile",
+                            dataPrecision=2)
+colorPallette <- findColours(intervals, colors)
+```
+
+This code is used to assign legend text, colors, and location.
+```{r}
+legendText="Graduation Rates \n (White is Missing)"
+shrinkLegend=0.6
+title="Graduation Rates Via School District in Washington State 2015"
+```
+```{r}
+plot(wazipMap,col='white',main=title)
+
+# Second change: col = colors[varToPLot]
+plot(contribWAmap, col = colorPallette,border='black',add=TRUE)
+legend('bottomleft', legend = names(attr(colorPallette, "table")), 
+       fill = attr(colorPallette, "palette"), cex = shrinkLegend, 
+       bty = "n",
+       title=legendText)
+```
+
+Now I want to see a map of Local Revenue. We create a new variable to plot. I also chose to change the colors.
+```{r}
+varToPLot2=contribWAmap$`Local Revenue`
+
+numberOfClasses = 7
+colorForScale='YlOrRd'
+colors = brewer.pal(numberOfClasses, colorForScale)
+intervals <- classIntervals(varToPLot2, numberOfClasses, 
+                            style = "quantile",
+                            dataPrecision=2)
+colorPallette <- findColours(intervals, colors)
+
+legendText="Total Revenue \n (White is Missing)"
+shrinkLegend=0.6
+title="Local Revenue Via School District in Washington State 2015"
+```
+```{r}
+plot(wazipMap,col='white',main=title)
+# second change: col = colors[varToPLot]
+plot(contribWAmap, col = colorPallette,border='black',add=TRUE)
+legend('bottomleft', legend = names(attr(colorPallette, "table")), 
+       fill = attr(colorPallette, "palette"), cex = shrinkLegend, 
+       bty = "n",
+       title=legendText)
+```
+
+Lastly, I wanted to see a map of Total Revenue. Again, we create a new variable, and rerun the map.
+```{r}
+varToPLot3=contribWAmap$`Total Revenue`
+
+numberOfClasses = 7
+colorForScale='YlGnBu'
+colors = brewer.pal(numberOfClasses, colorForScale)
+intervals <- classIntervals(varToPLot3, numberOfClasses, 
+                            style = "quantile",
+                            dataPrecision=2)
+colorPallette <- findColours(intervals, colors)
+
+legendText="Total Revenue \n (White is Missing)"
+shrinkLegend=0.6
+title="Total Revenue Via School District in Washington State 2015"
+```
+```{r}
+plot(wazipMap,col='white',main=title)
+
+# second change: col = colors[varToPLot]
+
+plot(contribWAmap, col = colorPallette,border='black',add=TRUE)
+legend('bottomleft', legend = names(attr(colorPallette, "table")), 
+       fill = attr(colorPallette, "palette"), cex = shrinkLegend, 
+       bty = "n",
+       title=legendText)
+```
+
+While this analysis has given us some insight as to whether there is a connection between revenue sources and graduation rates, the next step would be to determine possible correlations between graduation rates and other variables. Some of these variables may include: school size, town income levels, family status, gender, etc. It would be interesting to see what other elements may be effecting graduation rates.
+
+
