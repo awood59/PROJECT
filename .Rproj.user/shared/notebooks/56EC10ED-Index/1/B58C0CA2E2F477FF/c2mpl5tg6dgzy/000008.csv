@@ -1,2 +1,0 @@
-"0","library(car)"
-"0","scatterplotMatrix(FullData[,c(3:6)], diagonal='histogram',reg.line=NULL , smoother=NULL,legend.plot=F)"
