@@ -13,11 +13,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-##Researching the Possible Connection of District Revenues and Graduation Rates 
-
-# Alex Woodward
 # Governance Analytics - Professor Magallanes
-# March 16th, 2018
 
 ## **Executive Summary:**
 
@@ -256,30 +252,30 @@ I am currious what the order of School Districts with highest revenue rates look
 FullData[order(-FullData$`Total Revenue`),]
 ```
 
-Now I'd like to see descriptive statistics for total revenue.
+Now I'd like to see descriptive statistics for local revenue.
 ```{r}
-summary(FullData$'Total Revenue')
+summary(FullData$'Local Revenue')
 ```
 
 Standard deviation:
 ```{r}
 library(DescTools)
-sd(FullData$`Total Revenue`,na.rm = T)
+sd(FullData$`Local Revenue`,na.rm = T)
 ```
 
 Coefficient of Variation
 ```{r}
-sd(FullData$`Total Revenue`,na.rm = T)/mean(FullData$`Total Revenue`,na.rm = T)
+sd(FullData$`Local Revenue`,na.rm = T)/mean(FullData$`Local Revenue`,na.rm = T)
 ```
 
 Skewness
 ```{r}
-Skew(FullData$`State Revenue`,na.rm = T)
+Skew(FullData$`Local Revenue`,na.rm = T)
 ```
 
 Kurtosis
 ```{r}
-Kurt(FullData$`State Revenue`,na.rm = T)
+Kurt(FullData$`Local Revenue`,na.rm = T)
 ```
 
 Now let's look for a possible correlation.
