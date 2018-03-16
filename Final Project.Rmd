@@ -13,7 +13,11 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Governance Analytics Final Project: Researching the Possible Connection of District Revenues and Graduation Rates - Alex Woodward
+#Researching the Possible Connection of District Revenues and Graduation Rates 
+
+## Alex Woodward
+## Governance Analytics - Professor Magallanes
+## March 16th, 2018
 
 ## **Executive Summary:**
 
@@ -22,14 +26,11 @@ For the purpose of this paper, I aim to determine if revenue sources, particular
 Through my analysis, I hope to determine if there is a connection between Washington State School District graduation rates, school district revenue from state sources, school district revenue from local sources, and total school district revenue. Using statistical analysis through R, I will determine if there is a correlation between the aforementioned variables and will assess which school districts in Washington State have the highest rates of graduation. My analysis focuses on public school enrollment. 
 
 ## **Getting the Data**
-
-In order to determine the 
-
 For this research, I look at three forms of revenue: state, local and total revenue sources. The revenue information for this revenue source was taken from the US Census Annual Survey data. This survey was the 2015 Annual Survey of School System Finances, authorized by law under Title 13, United States Code, Sections 161 and 182. The most recent year available was 2015. The files were available in .cvs format.
 
 I also used information from the April 2015 Graduation and Dropout Statistics Annual Report from the Washington State Office of Superintendent of Public Instruction in order to determine district level graduation rates.
 
-Lasty, I used the 2015-2016 Enrollment rates from the  Washington State Office of Superintendent of Public Instruction.
+Lastly, I used the 2015-2016 Enrollment rates from the  Washington State Office of Superintendent of Public Instruction.
 
 ```{r cars}
 
@@ -241,7 +242,6 @@ FullData[which.min(FullData$`Total Revenue`),]
 ```{r}
 FullData[which.min(FullData$`Local Revenue`),] 
 ```
-We can see 
 
 Ok, now let's look at the districts with the lowest graduation rates.
 ```{r}
@@ -282,7 +282,7 @@ Kurtosis
 Kurt(FullData$`State Revenue`,na.rm = T)
 ```
 
-Now let's look start creating a correlation.
+Now let's look for a possible correlation.
 ```{r}
 data=FullData[is.finite(FullData$`Adjusted 5-Year Cohort Graduation Rate`),]
 ```
@@ -328,7 +328,7 @@ data.frame(Coefficient=results[,1],Significant=results[,4]<0.05)
 summary(LinRegEPI)$adj.r.squared
 ```
 
-Let's develop scatter plots. First, we need to assign variables.
+Next let's develop scatter plots to visualize our data. First, we need to assign variables.
 ```{r}
 var2=data$`State Revenue`
 
@@ -387,7 +387,7 @@ histAndNormal
 ```
 
 ## **Import Washington State School Districts Map**
-
+I want to use a map to visualize the district graduation rates and revenue levels.
 ```{r}
 
 # Import Map Files
@@ -418,68 +418,56 @@ plot(wazipMap,col='green')
 ## Next Step
 I will follow up by linking the map and plotting graduation rates via district.
 
+I need to see which columns can be connected in the data and the map. We can see we have the column 'name' in the map file.
+
 ```{r}
-
-# I need to see which columns can be connected in the data and the map. We can see we have the column 'name' in the map file.
-
 names(wazipMap)
 ```
+
+Fortunately, they are the same as the District Name in the Data file.
+
 ```{r}
-
-# Fortunately, they are the same as the District Name in the Data file.
-
 list(wazipMap@data$name)
 ```
 
+We can check that to verify.
 ```{r}
-
-# We can check that to verify.
-
 names(FullData)
 ```
 
+Let's run one last string to be absolutely sure.
 ```{r}
-
-# Let's run one last string to be absolutely sure.
-
 str(wazipMap$name)
 ```
 ```{r}
 str(FullData$`District Name`)
 ```
 
+
+Everything looks good. Now we merge the map file with the data file by District Name. 
 ```{r}
-
-## Everything looks good. Now we merge the map file with the data file by District Name. 
-
 contribWAmap=merge(wazipMap,FullData, by.x='name', by.y='District Name',all.x=F)
 ```
 
+I want to see the number of rows in the new map.
 ```{r}
-# I want to see the number of rows in the new map.
 nrow(contribWAmap)
 ```
 
+Now we plot the map to see that we are representing missing data correctly.
 ```{r}
-
-## Now we plot the map to see that we are representing missing data correctly.
-
 plot(wazipMap,col='white')
 plot(contribWAmap,col='light blue',border='grey',add=T)
 ```
 
+We need to install the correct libraries.
 ```{r}
-
-## We need to install the correct libraries.
-
 library(RColorBrewer)
 library(classInt)
 ```
 
+Next we assign the variable for plotting.
 ```{r}
-
-## Next we assign the variable for plotting.
-
 varToPLot=contribWAmap$`Adjusted 5-Year Cohort Graduation Rate`
 
 numberOfClasses = 7
@@ -491,10 +479,8 @@ intervals <- classIntervals(varToPLot, numberOfClasses,
 colorPallette <- findColours(intervals, colors)
 ```
 
+This code is used to assign legend text, colors, and location.
 ```{r}
-
-## This code is used to assign legend text, colors, and location.
-
 legendText="Graduation Rates \n (White is Missing)"
 shrinkLegend=0.6
 title="Graduation Rates Via School District in Washington State 2015"
@@ -509,10 +495,9 @@ legend('bottomleft', legend = names(attr(colorPallette, "table")),
        bty = "n",
        title=legendText)
 ```
+
+Now I want to see a map of Local Revenue. We create a new variable to plot. I also chose to change the colors.
 ```{r}
-
-# Now I want to see a map of Local Revenue. We create a new variable to plot. I also chose to change the colors.
-
 varToPLot2=contribWAmap$`Local Revenue`
 
 numberOfClasses = 7
@@ -536,10 +521,9 @@ legend('bottomleft', legend = names(attr(colorPallette, "table")),
        bty = "n",
        title=legendText)
 ```
+
+Lastly, I wanted to see a map of Total Revenue. Again, we create a new variable, and rerun the map.
 ```{r}
-
-## Lastly, I wanted to see a map of Total Revenue. Again, we create a new variable, and rerun the map.
-
 varToPLot3=contribWAmap$`Total Revenue`
 
 numberOfClasses = 7
@@ -566,5 +550,6 @@ legend('bottomleft', legend = names(attr(colorPallette, "table")),
        title=legendText)
 ```
 
+While this analysis has given us some insight as to whether there is a connection between revenue sources and graduation rates, the next step would be to determine possible correlations between graduation rates and other variables. Some of these variables may include: school size, town income levels, family status, gender, etc. It would be interesting to see what other elements may be effecting graduation rates.
 
 
