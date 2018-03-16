@@ -1,7 +1,0 @@
-"0","WAData$NAMEOK=NA"
-"0","for (pos in 1:nrow(WAData)){"
-"0","    if(WAData$NAMEbad[pos]!=""DISTRICT""){"
-"0","    cleanValue=sub(WAData$NAMEbad[pos],'',WAData$NAME[pos])"
-"0","    WAData$NAMEOK[pos]=trimws(cleanValue)"
-"0","    }else{WAData$NAMEOK[pos]=WAData$NAME[pos]}"
-"0","}"
