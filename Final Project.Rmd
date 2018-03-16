@@ -13,11 +13,11 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#Researching the Possible Connection of District Revenues and Graduation Rates 
+##Researching the Possible Connection of District Revenues and Graduation Rates 
 
-## Alex Woodward
-## Governance Analytics - Professor Magallanes
-## March 16th, 2018
+# Alex Woodward
+# Governance Analytics - Professor Magallanes
+# March 16th, 2018
 
 ## **Executive Summary:**
 
